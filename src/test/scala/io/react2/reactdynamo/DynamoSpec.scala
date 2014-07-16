@@ -1,28 +1,30 @@
 package io.react2.reactdynamo
 
+import scala.concurrent.duration._
 import org.specs2.mutable._
 import org.specs2.specification._
-import akka.util.Timeout
-import scala.concurrent.duration._
 import org.specs2.time.NoTimeConversions
+import akka.util.Timeout
+import io.react2.reactdynamo.fix.UserFix
 
-trait DynamoSpec extends Specification with AsyncMatchers with NoTimeConversions {
+trait DynamoSpec extends Specification with AsyncMatchers with NoTimeConversions with UserFix {
   lazy val dbSetup = databaseSetup
   override def map(fs: => Fragments) = Step(dbSetup.createDb) ^ fs ^ Step(dbSetup.cleanDb)
 
   import adapter.DurationBridge._
-  
+
   implicit val timeout: Timeout = Timeout(2 seconds)
   val duration = scala.concurrent.duration.Duration("5 seconds")
   val client = DynamoClient.local()
-  
-  
-  object databaseSetup {
 
-    def createTable(name: String) = {
-      val r = client.createTable(new Table(name, "UserId" -> AttributeType.String))
+  object databaseSetup {
+    
+    lazy val allTables = List(new Table("User", User.hashPK -> AttributeType.String))
+
+    def createTable(table: Table) = {
+      val r = client.createTable(table)
       println(await(r, duration).getTableDescription)
-      println("[ItemOpsSpec] Creating table " + name)
+      println("[ItemOpsSpec] Creating table " + table.name)
     }
 
     def dropTable(name: String) {
@@ -32,13 +34,13 @@ trait DynamoSpec extends Specification with AsyncMatchers with NoTimeConversions
     }
 
     lazy val createDb = {
-      createTable("Users")
+      allTables foreach createTable
       println("creating the database")
 
     }
 
     lazy val cleanDb = {
-      dropTable("Users")
+      allTables foreach { t => dropTable(t.name) }
       println("creating the database")
 
     }

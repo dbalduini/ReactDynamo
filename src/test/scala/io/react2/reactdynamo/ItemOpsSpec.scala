@@ -13,42 +13,26 @@ class ItemOpsSpec extends DynamoSpec with UserFix with NoTimeConversions {
 
   val tableName = "Users"
   val userId = java.util.UUID.randomUUID.toString
-
-  def newItem(name: String, age: Int) = {
-    val item = new HashMap[String, AttributeValue]();
-    item.put("UserId", new AttributeValue(name));
-    item.put("age", new AttributeValue().withN(Integer.toString(age)));
-    item
-  }
-
+  
   sequential
 
   "ItemOpsSpec" should {
 
     "Put an Item in DynamoDB" in {
-      val item = newItem(userId, 1989)
-      println(item)
-      val request = new PutItemRequest(tableName, item.asJava);
-      val f = client.putItem(request)
+      val user = User(userId, 1989)
+      println(user)
+      val f = client.putItem(user)
       val r = await(f, duration)
-      println("Result: " + r)
       r must not beNull
     }
 
     "Get an Item in DynamoDB" in {
-      val request = new GetItemRequest()
-        .withTableName(tableName)
-        .addKeyEntry("UserId", new AttributeValue().withS(userId))
-      val f = client.getItem(request)
+      val f = client.getItem[User](KeyEntry(User.hashPK)(_.withS(userId)))
       val r = await(f, duration)
       println("Result: " + r)
       r must not beNull
-    }
 
-    //
-    //    "Delete an Item in DynamoDB" in {
-    //    	
-    //    }
+    }
 
   }
 
