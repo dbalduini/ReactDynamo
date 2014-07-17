@@ -27,7 +27,8 @@ class DynamoClientSpec extends Specification with AsyncMatchers {
 
   val duration = scala.concurrent.duration.Duration("5 seconds")
 
-  val client = DynamoClient.local()
+  val driver = new DynamoDriver
+  val client = driver.local()
 
   sequential
 

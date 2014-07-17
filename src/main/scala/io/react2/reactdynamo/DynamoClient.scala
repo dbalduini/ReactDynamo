@@ -5,19 +5,26 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import akka.actor.ActorSystem
 
-object DynamoClient {
+class DynamoDriver(_system: Option[ActorSystem]) {
+
+  def this() = this(Some(DynamoDriver.defaultSystem))
+
+  lazy val system = _system.getOrElse(DynamoDriver.defaultSystem)
 
   def local(): DynamoClient = {
     val basic = new BasicAWSCredentials("", "")
     val client = new AmazonDynamoDBClient(basic)
     client.setEndpoint("http://localhost:8000")
-    new DynamoClient(defaultSystem.actorOf(DynamoConnection.props(client)))
-
+    new DynamoClient(client, system.actorOf(DynamoConnection.props(client)))
   }
 
-  def apply(): DynamoClient = ???
+  def connection(): DynamoClient = ???
+  
+}
 
-  private def defaultSystem = {
+object DynamoDriver {
+
+  private lazy val defaultSystem = {
     import com.typesafe.config.ConfigFactory
     val config = ConfigFactory.load()
     ActorSystem("reactdynamo")
@@ -25,4 +32,4 @@ object DynamoClient {
 
 }
 
-class DynamoClient(val clientRef: ActorRef) extends api.DynamoOps
+class DynamoClient(val db: AmazonDynamoDBClient, val clientRef: ActorRef) extends api.DynamoOps

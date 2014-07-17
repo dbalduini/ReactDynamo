@@ -5,8 +5,12 @@ import com.amazonaws.services.dynamodbv2.model._
 package object reactdynamo {
 
   type PK = (String, ScalarAttributeType)
-
   type KeyEntry = (String, AttributeValue)
+
+  type AttrValue = AttributeValue
+  type Item = Map[String, AttrValue]
+
+  type Filter = Map[String, Condition]
 
   def KeyEntry(key: String)(f: AttributeValue => AttributeValue): KeyEntry = {
     val value = new AttributeValue()
@@ -19,8 +23,9 @@ package object reactdynamo {
     val Binary = ScalarAttributeType.B
   }
 
-  object types {
-    type DynamoObject = (String, Map[String, AttributeValue])
+  object Implicits {
+    implicit def fromStringToCondition(key: String) = new RichCondition(key)
   }
 
 }
+

@@ -15,11 +15,13 @@ trait DynamoSpec extends Specification with AsyncMatchers with NoTimeConversions
 
   implicit val timeout: Timeout = Timeout(2 seconds)
   val duration = scala.concurrent.duration.Duration("5 seconds")
-  val client = DynamoClient.local()
+  
+  val driver = new DynamoDriver
+  val client = driver.local()
 
   object databaseSetup {
-    
-    lazy val allTables = List(new Table("User", User.hashPK -> AttributeType.String))
+
+    lazy val allTables = List(Table.at[User])
 
     def createTable(table: Table) = {
       val r = client.createTable(table)

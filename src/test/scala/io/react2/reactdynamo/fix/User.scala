@@ -1,10 +1,11 @@
 package io.react2.reactdynamo.fix
 
 import org.specs2.mutable.Specification
-import io.react2.reactdynamo.DynamoFormat
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 
-import io.react2.reactdynamo.types._
+import io.react2.reactdynamo.Item
+
+import io.react2.reactdynamo._
 
 trait UserFix {
   this: Specification =>
@@ -13,10 +14,12 @@ trait UserFix {
 
   object User {
 
-    val hashPK = "UserId"
-
     private val fixtures = Map(
-      "sample1" -> User("Diego", 25))
+      "sample1" -> User("Sample User 1", 25),
+      "sample2" -> User("Sample User 2", 20),
+      "sample2" -> User("Sample User 3", 17),
+      "yong" -> User("Yong User", 5),
+      "adult" -> User("Adult User", 30))
 
     def gimme(alias: String): User = fixtures(alias)
 
@@ -24,17 +27,17 @@ trait UserFix {
 
   }
 
-  
-  //TODO PENSAR COMO VO COLOCAR O NOME DA TABELA JUNTO COM O DYNAMO OBJECT
-  implicit val UserMapper = new DynamoFormat[User] {
+  implicit object UserDynamoObject extends DynamoObject[User] {
+    val tableName = "User"
+    val hashPK = ("name", AttributeType.String)
+    val rangePK = None
 
-    def writes(u: User): DynamoObject = (tableName, Map(
-      "name" -> new AttributeValue().withS(u.name),
-      "age" -> new AttributeValue().withN(u.age.toString)))
+    def toItem(t: User): Item = Map(
+      "name" -> value(t.name),
+      "age" -> value(t.age))
 
-    def reads(o: DynamoObject): User = User(
-      o._2("name").getS(),
-      o._2("age").getN().toInt)
+    def fromItem(item: Item): User = User(
+      item("name").read[String], item("age").read[Int])
 
   }
 

@@ -7,47 +7,59 @@ import akka.pattern.ask
 import scala.concurrent.Future
 import scala.collection.mutable.HashMap
 import scala.collection.JavaConverters._
-import types._
-import protocol.ItemCommands._
-
-import scala.reflect.ClassTag
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait ItemOps {
   this: DynamoOps =>
 
   import ItemOps._
+  import protocol.ItemCommands._
 
-  def putItem[T](t: T)(implicit timeout: Timeout, format: DynamoFormat[T]): Future[PutItemResult] = {
-    val request = putItemRequest(format.writes(t))
+  def putItem[T](t: T)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[PutItemResult] = {
+    val request = putItemRequest(obj.tableName, obj.toItem(t))
     (clientRef ? PutItem(request)).mapTo[PutItemResult]
   }
 
-  def getItem[T](key: KeyEntry)(implicit timeout: Timeout, format: DynamoFormat[T], tag: ClassTag[T]): Future[GetItemResult] = {
-    val tableName = tag.runtimeClass.getSimpleName
+  def getItem[T](key: Item)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[T] = {
+    println("GET ITEM DEBUG")
+    val tableName = obj.tableName
     val request = getItemRequest(tableName, key)
-    (clientRef ? GetItem(request)).mapTo[GetItemResult]
+    println(request)
+    val f = (clientRef ? GetItem(request)).mapTo[GetItemResult].map {
+      result =>
+        println(result)
+        obj.fromItem(result.getItem.asScala.toMap)
+    }
+    f.onComplete {
+      case t => println("GET ITEM  " + t)
+    }
+    f
+  }
+
+  def deleteItem[T](key: KeyEntry)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[DeleteItemResult] = {
+    val tableName = obj.tableName
+    val request = deleteItemRequest(tableName, key)
+    (clientRef ? DeleteItem(request)).mapTo[DeleteItemResult]
   }
 
   def update = ???
-  def delete = ???
 
 }
 
 private[this] object ItemOps {
-  
-  def putItemRequest(dynamoObject: DynamoObject): PutItemRequest = {
-    val item = HashMap[String, AttributeValue]()
-    dynamoObject._2.map {
-      case (key, value) => item.put(key, value);
-    }
-    new PutItemRequest(dynamoObject._1, item.asJava)
+
+  def putItemRequest(tableName: String, item: Item): PutItemRequest =
+    new PutItemRequest(tableName, item.asJava)
+
+  def getItemRequest(tableName: String, item: Item): GetItemRequest = {
+	  val j = item.asJava
+      val g = new GetItemRequest().withTableName(tableName).withKey(j)
+      println("GET ITEM REQUEST  " + g)
+      g
   }
 
-  def getItemRequest(tableName: String, key: KeyEntry): GetItemRequest = {
-    val request = new GetItemRequest()
-      .withTableName(tableName)
-      .addKeyEntry(key._1, key._2)
-    request
+  def deleteItemRequest(tableName: String, key: KeyEntry): DeleteItemRequest = key match {
+    case (k, v) => new DeleteItemRequest().withTableName(tableName).addKeyEntry(key._1, key._2)
   }
-  
+
 }
