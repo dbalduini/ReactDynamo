@@ -24,12 +24,9 @@ case class Table(
 
 object Table {
 
-  def at[T](implicit dynamoObj: DynamoObject[T]) = {
-    println("****** " + dynamoObj.rangePK)
-    new Table(
-      name = dynamoObj.tableName,
-      hashPK = dynamoObj.hashPK,
-      rangePK = dynamoObj.rangePK)
-  }
+  def apply[T](implicit dynamoObj: DynamoObject[T]) = new Table(
+    name = dynamoObj.tableName,
+    hashPK = dynamoObj.hashPK,
+    rangePK = dynamoObj.rangePK)
 
 }

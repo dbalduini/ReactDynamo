@@ -1,25 +1,20 @@
 package io.react2.reactdynamo.fix
 
 import org.specs2.mutable.Specification
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-
-import io.react2.reactdynamo.Item
-
 import io.react2.reactdynamo._
 
 trait UserFix {
-  this: Specification =>
 
-  case class User(name: String, age: Int)
+  case class User(name: String, age: Int, genre: Option[Char])
 
   object User {
 
-    private val fixtures = Map(
-      "sample1" -> User("Sample User 1", 25),
-      "sample2" -> User("Sample User 2", 20),
-      "sample2" -> User("Sample User 3", 17),
-      "yong" -> User("Yong User", 5),
-      "adult" -> User("Adult User", 30))
+    private val fixtures: Map[String, User] = Map(
+      "male" -> User("Sample User 1", 25, Some('M')),
+      "sample" -> User("Sample User 2", 20, None),
+      "female" -> User("Sample User 3", 17, Some('F')),
+      "yong" -> User("Yong User", 5, None),
+      "adult" -> User("Adult User", 30, Some('M')))
 
     def gimme(alias: String): User = fixtures(alias)
 
@@ -27,17 +22,22 @@ trait UserFix {
 
   }
 
-  implicit object UserDynamoObject extends DynamoObject[User] {
+  implicit object UserDO extends DynamoObject[User] {
+    import Implicits._
+
     val tableName = "User"
     val hashPK = ("name", AttributeType.String)
     val rangePK = None
 
-    def toItem(t: User): Item = Map(
-      "name" -> value(t.name),
-      "age" -> value(t.age))
+    def toItem(t: User): Item = obj(
+      key("name").value(t.name),
+      key("age").value(t.age),
+      key("genre").valueOpt(t.genre))
 
     def fromItem(item: Item): User = User(
-      item("name").read[String], item("age").read[Int])
+      item("name").read[String],
+      item("age").read[Int],
+      item.get("genre").readOpt[Char])
 
   }
 

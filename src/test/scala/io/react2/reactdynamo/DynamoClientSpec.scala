@@ -13,7 +13,7 @@ import akka.util.Timeout
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration.FiniteDuration
 
-class DynamoClientSpec extends Specification with AsyncMatchers {
+class DynamoClientSpec extends Specification with Blockable {
 
   case class Test(name: String, num: Int)
 

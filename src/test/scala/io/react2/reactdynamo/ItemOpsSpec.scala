@@ -1,45 +1,57 @@
 package io.react2.reactdynamo
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable.HashMap
 import org.specs2.mutable._
-import com.amazonaws.services.dynamodbv2.model._
 
-import akka.util.Timeout
-import fix.UserFix
-import org.specs2.time.NoTimeConversions
-
-class ItemOpsSpec extends DynamoSpec with UserFix with NoTimeConversions {
-
+class ItemOpsSpec extends DynamoSpec with Format {
   val tableName = "Users"
   val userId = java.util.UUID.randomUUID.toString
 
-  val user = User(userId, 1989)
+  val user = User(userId, 1989, Some('M'))
+  val account = UserAccount.gimme("sample1")
 
   sequential
 
   "ItemOpsSpec" should {
 
-    "Put an Item in DynamoDB" in {
+    "Put an User in DynamoDB" in {
       val f = client.putItem(user)
       val r = await(f, duration)
-      println("Put Item: " + r)
+      println("Put User: " + r)
       r must not beNull
     }
 
-//    "Get an Item in DynamoDB" in {
-//      val f = client.getItem[User](KeyEntry(UserDynamoObject.hashPK._1)(_.withS(userId)))
-//      val r = await(f, duration)
-//      println("Get Item: " + r)
-//      r must_== user
-//    }
-//
-//    "Delete an Item in DynamoDB" in {
-//      val f = client.deleteItem(KeyEntry(UserDynamoObject.hashPK._1)(_.withS(userId)))
-//      val r = await(f, duration)
-//      println("Delete Item: " + r)
-//      r must not beNull
-//    }
+    "Put an UserAccount in DynamoDB" in {
+      val f = client.putItem(account)
+      val r = await(f, duration)
+      println("Put UserAccount: " + r)
+      r must not beNull
+    }
+
+    "Get an User in DynamoDB" in {
+      val key = Map("name" -> write(userId))
+      val f = client.getItem[User](key)
+      val r = await(f, duration)
+      println("Get User: " + r)
+      r must_== user
+    }
+
+    "Get an UserAccount in DynamoDB" in {
+      val hash = Map("UserId" -> write(account.userId))
+      val range = Map("uuid" -> write(account.uuid))
+      val keys = (hash ++ range)
+      val f = client.getItem[UserAccount](keys)
+      val r = await(f, duration)
+      println("Get UserAccount: " + r)
+      r must_== account
+    }
+
+    "Delete an Item in DynamoDB" in {
+      val key = Map("name" -> write(userId))
+      val f = client.deleteItem[User](key)
+      val r = await(f, duration)
+      println("Delete Item: " + r)
+      r must not beNull
+    }
 
   }
 

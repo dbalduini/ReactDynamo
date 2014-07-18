@@ -1,21 +1,14 @@
 package io.react2
 
 import com.amazonaws.services.dynamodbv2.model._
+import com.amazonaws.services.dynamodbv2.model.{ AttributeValue => JAttributeValue }
 
 package object reactdynamo {
 
+  type AttributeValue = JAttributeValue
   type PK = (String, ScalarAttributeType)
-  type KeyEntry = (String, AttributeValue)
-
-  type AttrValue = AttributeValue
-  type Item = Map[String, AttrValue]
-
   type Filter = Map[String, Condition]
-
-  def KeyEntry(key: String)(f: AttributeValue => AttributeValue): KeyEntry = {
-    val value = new AttributeValue()
-    (key, f(value))
-  }
+  type Item = Map[String, AttributeValue]
 
   object AttributeType {
     val String = ScalarAttributeType.S
@@ -24,7 +17,16 @@ package object reactdynamo {
   }
 
   object Implicits {
-    implicit def fromStringToCondition(key: String) = new RichCondition(key)
+    implicit def string2RichCondition(key: String) = new RichCondition(key)
+    implicit def attrv2RichAttributeValue(attv: AttributeValue): RichAttributeValue = new RichAttributeValue(attv)
+    implicit def attrv2RichAttributeValue(attv: Option[AttributeValue]): RichAttributeValue = new RichAttributeValue(attv)
+  }
+
+  object NotEmptyString {
+    def apply(s: String): Option[String] = Option(s) match {
+      case Some(s) if !s.isEmpty => Some(s)
+      case _ => None
+    }
   }
 
 }

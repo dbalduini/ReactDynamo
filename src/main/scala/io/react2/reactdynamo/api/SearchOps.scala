@@ -1,15 +1,15 @@
 package io.react2.reactdynamo
 package api
 
-import com.amazonaws.services.dynamodbv2.model.PutItemResult
-import akka.util.Timeout
-import scala.concurrent.Future
-import scala.collection.JavaConverters._
 import com.amazonaws.services.dynamodbv2.model.ScanResult
-import akka.pattern.ask
 import com.amazonaws.services.dynamodbv2.model.ScanRequest
 
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.collection.JavaConverters._
 
 trait SearchOps {
   this: DynamoOps =>
@@ -21,7 +21,8 @@ trait SearchOps {
     val request = scanRequest(obj.tableName, f)
     (clientRef ? Scan(request)).mapTo[ScanResult] map {
       result =>
-        result.getItems.asScala.toList.map(item => obj.fromItem(item.asScala.toMap))
+        val items = result.getItems.asScala.toList
+        items.map(item => obj.fromItem(item.asScala.toMap))
     }
   }
 
@@ -32,6 +33,6 @@ trait SearchOps {
 private[this] object SearchOps {
 
   def scanRequest(tableName: String, f: Filter) =
+    //new ScanRequest().withTableName(tableName).withScanFilter(f.asJava).withConditionalOperator()
     new ScanRequest().withTableName(tableName).withScanFilter(f.asJava)
-
 }
