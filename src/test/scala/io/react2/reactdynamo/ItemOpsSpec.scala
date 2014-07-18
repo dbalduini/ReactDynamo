@@ -32,7 +32,7 @@ class ItemOpsSpec extends DynamoSpec with Format {
       val f = client.getItem[User](key)
       val r = await(f, duration)
       println("Get User: " + r)
-      r must_== user
+      r must_== Some(user)
     }
 
     "Get an UserAccount in DynamoDB" in {
@@ -42,7 +42,7 @@ class ItemOpsSpec extends DynamoSpec with Format {
       val f = client.getItem[UserAccount](keys)
       val r = await(f, duration)
       println("Get UserAccount: " + r)
-      r must_== account
+      r must_== Some(account)
     }
 
     "Delete an Item in DynamoDB" in {
@@ -51,6 +51,14 @@ class ItemOpsSpec extends DynamoSpec with Format {
       val r = await(f, duration)
       println("Delete Item: " + r)
       r must not beNull
+    }
+
+    "Return None when the item is not found" in {
+      val key = Map("name" -> write("dont exist"))
+      val f = client.getItem[User](key)
+      val r = await(f, duration)
+      println("Get User: " + r)
+      r must beNone
     }
 
   }

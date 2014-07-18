@@ -5,7 +5,9 @@ object ReactDynamoProject extends Build
 {
   import Resolvers._
   
-  lazy val root = Project("ReactDynamo", file(".")) settings(coreSettings : _*)
+  val projectName = "ReactDynamo"
+  
+  lazy val root = Project(projectName, file(".")) settings(coreSettings : _*)
 
   lazy val commonSettings: Seq[Setting[_]] = Seq(
     organization := "io.react2",
@@ -17,7 +19,7 @@ object ReactDynamoProject extends Build
   val akkaVersion = "2.2.0"
     
   lazy val coreSettings = commonSettings ++ Seq(
-    name := "RedisReact",
+    name := projectName,
     libraryDependencies :=
         Seq(
 		  "org.specs2"        %% "specs2"                    % "2.3.10"      % "test",
@@ -29,7 +31,7 @@ object ReactDynamoProject extends Build
     parallelExecution in Test := false,
     publishTo := Some("Artifactory Realm" at "http://4be8e2a8.ngrok.com/artifactory/libs-snapshot-local"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    publishMavenStyle := false,
+    publishMavenStyle := true,
     publishArtifact in Test := false
   )
   

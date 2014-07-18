@@ -20,6 +20,8 @@ class DynamoDriver(_system: Option[ActorSystem]) {
 
   def connection(): DynamoClient = ???
   
+  def shutdown() = system.shutdown()
+  
 }
 
 object DynamoDriver {

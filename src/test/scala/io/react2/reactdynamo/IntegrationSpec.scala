@@ -28,7 +28,7 @@ class IntegrationSpec extends DynamoSpec with Format {
 
       val dbUser = await(result, duration)
 
-      dbUser must_== male
+      dbUser must_== Some(male)
     }
 
   }

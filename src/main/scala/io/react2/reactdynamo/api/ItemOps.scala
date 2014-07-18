@@ -21,11 +21,11 @@ trait ItemOps {
     (clientRef ? PutItem(request)).mapTo[PutItemResult]
   }
 
-  def getItem[T](key: Item)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[T] = {
+  def getItem[T](key: Item)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[Option[T]] = {
     val request = getItemRequest(obj.tableName, key)
     (clientRef ? GetItem(request)).mapTo[GetItemResult].map {
       result =>
-        obj.fromItem(result.getItem.asScala.toMap)
+        NotEmptyItem(result.getItem).map(r => obj.fromItem(r.asScala.toMap))
     }
   }
 
@@ -39,7 +39,7 @@ trait ItemOps {
 }
 
 private[this] object ItemOps {
-
+  
   def putItemRequest(tableName: String, item: Item): PutItemRequest =
     new PutItemRequest(tableName, item.asJava)
 

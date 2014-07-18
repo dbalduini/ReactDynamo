@@ -6,10 +6,13 @@ import com.amazonaws.services.dynamodbv2.model.{ AttributeValue => JAttributeVal
 package object reactdynamo {
 
   type AttributeValue = JAttributeValue
+  type AttributeType = ScalarAttributeType
+  
   type PK = (String, ScalarAttributeType)
   type Filter = Map[String, Condition]
   type Item = Map[String, AttributeValue]
-
+  type JItem = java.util.Map[String, AttributeValue]
+  
   object AttributeType {
     val String = ScalarAttributeType.S
     val Number = ScalarAttributeType.N
@@ -29,5 +32,11 @@ package object reactdynamo {
     }
   }
 
-}
+  object NotEmptyItem {
+    def apply(m: JItem): Option[JItem] = Option(m) match {
+      case Some(m) if !m.isEmpty => Some(m)
+      case _ => None
+    }
+  }
 
+}
