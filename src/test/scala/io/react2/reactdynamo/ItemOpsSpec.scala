@@ -20,10 +20,12 @@ class ItemOpsSpec extends DynamoSpec with Format {
       r must not beNull
     }
 
-    "Put an UserAccount in DynamoDB" in {
-      val f = client.putItem(account)
+    "Update an user in DynamoDB" in {
+      val hash = Map("name" -> write(userId))
+      val item = key("age").update(55, AttributeAction.PUT)
+      val f = client.updateItem[User](hash, item)
       val r = await(f, duration)
-      println("Put UserAccount: " + r)
+      println("Update User: " + r)
       r must not beNull
     }
 
@@ -32,7 +34,14 @@ class ItemOpsSpec extends DynamoSpec with Format {
       val f = client.getItem[User](key)
       val r = await(f, duration)
       println("Get User: " + r)
-      r must_== Some(user)
+      r.map(_.age) must beSome(55)
+    }
+
+    "Put an UserAccount in DynamoDB" in {
+      val f = client.putItem(account)
+      val r = await(f, duration)
+      println("Put UserAccount: " + r)
+      r must not beNull
     }
 
     "Get an UserAccount in DynamoDB" in {

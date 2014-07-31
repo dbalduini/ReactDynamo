@@ -22,4 +22,7 @@ private[reactdynamo] case class KeyValue(key: String) {
     case None => None
   }
 
+  def update[T: Writes](value: T, action: AttributeAction): ItemUpdate =
+    Map(key -> new AttributeValueUpdate(implicitly[Writes[T]].writes(value), action))
+
 }

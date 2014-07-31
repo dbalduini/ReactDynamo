@@ -11,6 +11,6 @@ trait DynamoObject[T] extends Format {
   def obj(pairs: KeyValue#Pair*): Item = (for {
     pair <- pairs if pair.isDefined
   } yield pair.get).toMap
-
+  
 }
 

@@ -2,12 +2,10 @@ package io.react2.reactdynamo
 package api
 
 import com.amazonaws.services.dynamodbv2.model._
-
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.collection.JavaConverters._
 
 trait ItemOps {
@@ -34,12 +32,15 @@ trait ItemOps {
     (clientRef ? DeleteItem(request)).mapTo[DeleteItemResult]
   }
 
-  def update = ???
+  def updateItem[T](key: Item, item: ItemUpdate)(implicit timeout: Timeout, obj: DynamoObject[T]): Future[UpdateItemResult] = {
+    val request = updateItemRequest(obj.tableName, key, item)
+    (clientRef ? UpdateItem(request)).mapTo[UpdateItemResult]
+  }
 
 }
 
 private[this] object ItemOps {
-  
+
   def putItemRequest(tableName: String, item: Item): PutItemRequest =
     new PutItemRequest(tableName, item.asJava)
 
@@ -48,5 +49,8 @@ private[this] object ItemOps {
 
   def deleteItemRequest(tableName: String, key: Item): DeleteItemRequest =
     new DeleteItemRequest().withTableName(tableName).withKey(key.asJava)
+
+  def updateItemRequest(tableName: String, key: Item, item: ItemUpdate): UpdateItemRequest =
+    new UpdateItemRequest(tableName, key.asJava, item.asJava)
 
 }
