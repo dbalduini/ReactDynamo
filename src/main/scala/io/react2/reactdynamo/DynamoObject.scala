@@ -20,23 +20,19 @@ trait DynamoObject[T] extends Format {
 
 }
 
-trait LazyLoading {
+trait EagerLoading {
 
-  def duration = 1 second
+  def duration: FiniteDuration
 
-  implicit val timeout: Timeout = new Timeout(duration)
+  //  @deprecated("not safe")
+  //  def save[T](e: T)(r: T => KeyValue#Pair)(implicit dyo: DynamoObject[T]): KeyValue#Pair = {
+  //    client.putItem(e)(timeout, dyo)
+  //    r(e)
+  //  }
 
-  val client = new DynamoDriver().local
-
-  @deprecated("not safe")
-  def save[T](e: T)(r: T => KeyValue#Pair)(implicit dyo: DynamoObject[T]): KeyValue#Pair = {
-    client.putItem(e)(timeout, dyo)
-    r(e)
-  }
-
-  def eager[T](key: Item)(implicit dyo: DynamoObject[T]): T = {
-    val future = client.getItem(key)(timeout, dyo).map(_.getOrElse(throw BrokenRelationshipException))
-    Await.result(future, timeout.duration).asInstanceOf[T]
+  def eager[T](f: Future[Option[T]]): T = {
+    val maybe: Option[T] = Await.result(f, duration).asInstanceOf[Option[T]]
+    maybe.getOrElse(throw BrokenRelationshipException)
   }
 
 }

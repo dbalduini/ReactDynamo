@@ -3,6 +3,10 @@ package io.react2.reactdynamo.fix
 import org.specs2.mutable.Specification
 import io.react2.reactdynamo._
 
+import akka.util.Timeout
+import scala.concurrent.duration._
+import scala.concurrent.Future
+
 trait UserFix {
 
   case class User(name: String, age: Int, genre: Option[Char])
@@ -39,6 +43,16 @@ trait UserFix {
       item("age").read[Int],
       item.get("genre").readOpt[Char])
 
+  }
+  
+  object UserDAO extends Format {
+    
+    val timeout: Timeout = Timeout(2 seconds)
+    val client = new DynamoDriver().local
+    
+    def findById(id: String): Future[Option[User]] = 
+      client.getItem( Map("name" -> write(id)))(timeout, UserDO)
+    
   }
 
 }
