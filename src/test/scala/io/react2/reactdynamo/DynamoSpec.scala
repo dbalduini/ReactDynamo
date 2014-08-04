@@ -9,7 +9,7 @@ import fix._
 import com.amazonaws.services.dynamodbv2.util.Tables
 
 trait DynamoSpec extends Specification with Blockable with NoTimeConversions
-  with UserFix with UserAccountFix {
+  with UserFix with UserAccountFix with ClientFix {
 
   import adapter.DurationBridge._
 
@@ -25,7 +25,8 @@ trait DynamoSpec extends Specification with Blockable with NoTimeConversions
 
     lazy val allTables = List(
       Table[User],
-      Table[UserAccount])
+      Table[UserAccount],
+      Table[Client])
 
     def isNewTable(name: String) = !Tables.doesTableExist(client.db, name)
 

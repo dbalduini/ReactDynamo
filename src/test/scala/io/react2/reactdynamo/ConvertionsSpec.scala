@@ -3,6 +3,7 @@ package io.react2.reactdynamo
 import org.specs2.mutable._
 import io.react2.reactdynamo.exceptions.ReadsException
 import fix.UserFix
+import io.react2.reactdynamo.fix.ClientFix
 
 class ConvertionsSpec extends Specification with Format with UserFix {
 
