@@ -18,14 +18,14 @@ aws_secret_access_key = <Your Secret Key>
 
 ## Getting started
 
-```
+```scala
 import io.react2.reactdynamo._
 import io.react2.reactdynamo.Implicits._
 ```
 
 ### Dynamo Client
 
-```
+```scala
 val driver = new DynamoDriver
 val client = driver.connection()
 ```
@@ -37,7 +37,7 @@ A Dynamo Object represents a Table for a model.
 
 Ex:
 
-```
+```scala
 case class User(name: String, age: Int, genre: Option[Char])
 
 implicit object UserDO extends DynamoObject[User] {
@@ -68,7 +68,7 @@ All supported operations can be found in the dynamo client obtained from the *dr
 
 Any operation require an implicit Dynamo Object in the context
 
-```
+```scala
 implicit val userDO = UserDO
 ```
 
@@ -79,7 +79,7 @@ implicit val userDO = UserDO
 
 #### _Code Samples_
 
-```
+```scala
 implicit val timeout: Timeout = Timeout(2 seconds)
 
 val userTable = Table[User]
@@ -98,7 +98,7 @@ val futureOfDelete = client.deleteTable(userTable.name)
 
 #### _Code Samples_
 
-```
+```scala
 implicit val timeout: Timeout = Timeout(2 seconds)
 
 val userId = java.util.UUID.randomUUID.toString
@@ -106,15 +106,15 @@ val user = User(userId, 1985, Some('M'))
 val key = Map("name" -> write(userId))
 ```
 
-```
+```scala
 val future: Future[Option[User]] = client.getItem[User](key)
 ```
 
-```
+```scala
 val futureOfDelete = client.deleteItem[User](key)
 ```
 
-```
+```scala
 val item = key("age").update(55, AttributeAction.PUT)
 val f = client.updateItem[User](key, item)
 ```
@@ -125,12 +125,12 @@ val f = client.updateItem[User](key, item)
 
 #### _Code Samples_
 
-```
+```scala
 val query = "age" > 20
 val future: Future[List[User]] = client.scan[User](query)
 ```
 
-```
+```scala
 val query = (("age" >= 18) ++ ("genre" === 'M'))
 val futureOfUsers = client.scan[User](query)
 ```
