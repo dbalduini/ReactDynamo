@@ -16,7 +16,7 @@ object TableCommands {
       val ctr = new CreateTableRequest().withTableName(table.name)
         .withKeySchema(table.keySchema: _*)
         .withAttributeDefinitions(defineAttribute(table.hashPK))
-        .withProvisionedThroughput(table.provisionedThroughput);
+        .withProvisionedThroughput(table.provisionedThroughput)
       table.rangePK.map(range => ctr.withAttributeDefinitions(defineAttribute(range)))
       ctr
     }
@@ -25,6 +25,10 @@ object TableCommands {
 
   case class DeleteTable(name: String) extends DynamoCommand[DeleteTableResult] {
     def execute(client: AmazonDynamoDBClient): DeleteTableResult = client.deleteTable(name)
+  }
+
+  case class ListTables(limit: Int) extends DynamoCommand[ListTablesResult] {
+    override def execute(client: AmazonDynamoDBClient): ListTablesResult = client.listTables(limit)
   }
 
 }

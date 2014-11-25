@@ -2,7 +2,6 @@ package io.react2.reactdynamo
 package api
 
 import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.util.Tables
 
 import akka.pattern.ask
 import akka.util.Timeout
@@ -18,6 +17,9 @@ trait TableOps {
 
   def deleteTable(name: String)(implicit timeout: Timeout) =
     (clientRef ? DeleteTable(name)).mapTo[DeleteTableResult]
+
+  def listTables(limit: Int = 100)(implicit timeout: Timeout) =
+    (clientRef ? ListTables(limit)).mapTo[ListTablesResult]
 
   def describeTable = ???
 
